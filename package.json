@@ -4,15 +4,27 @@
   "description": "server.js",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "ejs": "^3.1.8",
     "express": "^4.18.2",
+    "express-session": "^1.17.3",
     "method-override": "^3.0.0",
     "mongobd": "^0.0.1-security.0",
-    "mongodb": "^4.11.0"
-  }
+    "mongodb": "^4.11.0",
+    "passport": "^0.6.0",
+    "passport-local": "^1.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hyeongtae97/node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hyeongtae97/node/issues"
+  },
+  "homepage": "https://github.com/hyeongtae97/node#readme"
 }
