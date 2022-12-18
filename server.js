@@ -8,6 +8,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
 
+
 app.use(session({secret : '비밀코드', resave : true, saveUninitialiezed : false}));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -116,27 +117,54 @@ app.get('/login', function(req, res){
     res.render('login.ejs');
 });
 
-app.post('/login', passport.authenticate('local', {
-    failureRedirect : '/fail'
-}), function(req, res){
+app.post('/login', passport.authenticate('local', { failureRedirect : '/fail' }), function(req, res){
     res.redirect('/')
 });
+
+
 
 passport.use(new LocalStrategy({
     usernameField: 'id',
     passwordField: 'pw',
     session: true,
     passReqToCallback: false,
-  }, function (입력한아이디, 입력한비번, done) {
+  }, function (userid, password, done) {
     //console.log(입력한아이디, 입력한비번);
-    db.collection('login').findOne({ id: 입력한아이디 }, function (에러, 결과) {
-      if (에러) return done(에러)
+    db.collection('login').findOne({ id: userid }, function (err, result) {
+      if (err) return done(err)
   
-      if (!결과) return done(null, false, { message: '존재하지않는 아이디요' })
-      if (입력한비번 == 결과.pw) {
-        return done(null, 결과)
+      if (!result) return done(null, false, { message: '존재하지않는 아이디요' })
+      if ( password === result.pw) {
+        console.log('로그인성공')
+        return done(null, result)
       } else {
         return done(null, false, { message: '비번틀렸어요' })
       }
     })
-  }));
+  })); 
+
+  // done(서버에러, 성공시 사용자 DB 데이터, 에러메시지)
+  // 실제 구현 할 때는 '회원가입시 비밀번호' +' 로그인 시 사용자 입력 비밀번호' 암호화 하여 비교해야함 
+
+    // 세션을 만들어주는 passport 라이브러리
+  passport.serializeUser(function (user, done) {
+    done(null, user.id)
+  });
+    // 세션을 해석하는 라이브러리(어떤사람인지)
+  passport.deserializeUser(function (useri, done) {
+    db.collection('login').findOne({ id: useri }, function(err, result){
+      done(null, result)
+    });
+  }); 
+
+  function authlogin(req, res, next){
+    if(req.user){
+      next()
+    }else {
+      res.send("<script>alert('로그인안함');</script>");
+    }
+  }
+  app.get('/mypage',authlogin, function(req, res){
+    console.log(req.user);
+    res.render('mypage.ejs', {userinfo : req.user});
+  });

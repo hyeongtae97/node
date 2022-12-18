@@ -24,6 +24,7 @@
         <p class="card-text"><%= posts[i].날짜 %></p>
         <a href="/edit/<%= posts[i]._id %>" class="card-link">수정하기</a>
       </div>
+      <button class="delete" data-id="<%= posts[i]._id %>">삭제하기</button>
     </div>
   </div>
   <% } %>
@@ -63,7 +64,7 @@
           data : { _id : pageNum }
           //
         }).done(function(result){
-          nowClick.parent('li').fadeOut();
+          nowClick.parent('div').fadeOut();
         }).fail(function(xhr, textStatus, errorThorwn){
           console.log(xhr, textStatus, errorThrown);
         });
