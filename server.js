@@ -32,7 +32,7 @@ var day;
 
 
 app.listen(8080, function(){
-    console.log('listening on 8080');
+    console.log("HT's server is now starting, listening on 8080");
 });
 
 app.get('/', function(request, response){
@@ -161,7 +161,7 @@ passport.use(new LocalStrategy({
     if(req.user){
       next()
     }else {
-      res.send("<script>alert('로그인안함');</script>");
+      res.send("<script>alert('로그인 먼저 하셔야 하는대요?');document.location.href='/login';</script>");
     }
   }
   app.get('/mypage',authlogin, function(req, res){
