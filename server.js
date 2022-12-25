@@ -3,6 +3,7 @@ const express = require('express');
 const MongoClient = require('mongodb').MongoClient;
 const app = express();
 const methodOverride = require('method-override');
+const requestIp = require('request-ip');
 
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
@@ -31,20 +32,23 @@ var title;
 var day;
 
 
-app.listen(8080, function(){
+app.listen(8080,'0.0.0.0', function(){
     console.log("HT's server is now starting, listening on 8080");
 });
 
 app.get('/', function(request, response){
     response.sendFile(__dirname + '/index.html');
+    console.log(" '/' request, client IP : " + requestIp.getClientIp(request));
 });
 
 app.get('/write', function(request, response){
     response.sendFile(__dirname + '/write.html');
+    console.log(" '/write' request, client IP : " + requestIp.getClientIp(request));
 });
 
 app.post('/add', function(request, response){
     response.send('전송완료');
+    console.log(" '/add' request, client IP : " + requestIp.getClientIp(request));
     db.collection('counter').findOne({ name : '게시물갯수' }, function(err, result){
         if (err){
             console.log(err);
@@ -77,12 +81,14 @@ app.post('/add', function(request, response){
 app.get('/list', function(request, response){
     db.collection('post').find().toArray(function(err,result){
         response.render('list.ejs', {posts : result});
+        console.log(" '/list' request, client IP : " + requestIp.getClientIp(request));
     });
     
 });
 
 app.delete('/delete', function(req, res){
     console.log(req.body._id);
+    console.log(" '/delete' request, client IP : " + requestIp.getClientIp(req));
     req.body._id = parseInt(req.body._id);
     console.log(req.body._id);
     db.collection('post').deleteOne({_id : req.body._id}, function(err, result){
@@ -92,7 +98,7 @@ app.delete('/delete', function(req, res){
 
 app.get('/detail/:pageNumber', function(req, res){
     db.collection('post').findOne({_id : parseInt(req.params.pageNumber)}, function(err, result){
-
+        console.log(" '/detailPage' request, client IP : " + requestIp.getClientIp(req));
         console.log(result);
         res.render('detail.ejs', {data : result});
 
@@ -101,23 +107,25 @@ app.get('/detail/:pageNumber', function(req, res){
 
 app.get('/edit/:pageNumber', function(req, res){
     db.collection('post').findOne({_id : parseInt(req.params.pageNumber)}, function(err, result){
-
+        console.log(" '/editPage' request, client IP : " + requestIp.getClientIp(req));
         res.render('edit.ejs', {data : result});
     });
 });
 
 app.put('/edit', function(req, res){
     db.collection('post').updateOne({_id : parseInt(req.body.id)}, {$set : {제목 : req.body.todo, 날짜 : req.body.day}}, function(err, result){
-
+      console.log(" '/editPut' request, client IP : " + requestIp.getClientIp(req));
         res.redirect('/');
     });
 });
 
 app.get('/login', function(req, res){
+    console.log(" '/login' request, client IP : " + requestIp.getClientIp(req));
     res.render('login.ejs');
 });
 
 app.post('/login', passport.authenticate('local', { failureRedirect : '/fail' }), function(req, res){
+    console.log(" '/loginPost' request, client IP : " + requestIp.getClientIp(req));
     res.redirect('/')
 });
 
@@ -165,6 +173,7 @@ passport.use(new LocalStrategy({
     }
   }
   app.get('/mypage',authlogin, function(req, res){
+    console.log(" '/myPage' request, client IP : " + requestIp.getClientIp(req));
     console.log(req.user);
     res.render('mypage.ejs', {userinfo : req.user});
   });
