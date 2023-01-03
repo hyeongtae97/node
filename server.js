@@ -20,7 +20,7 @@ app.use('public', express.static('public'));
 
 var db;
 
-MongoClient.connect('mongodb+srv://hyeongtae:rlagudxo97@cluster0.p1tihon.mongodb.net/?retryWrites=true&w=majority', { useUnifiedTopology: true }, function (err, client) {
+MongoClient.connect(process.env.DB_URL, { useUnifiedTopology: true }, function (err, client) {
     if (err) return console.log(err)
 	db = client.db('todoapp');
 });
@@ -32,7 +32,7 @@ var title;
 var day;
 
 
-app.listen(8080,'0.0.0.0', function(){
+app.listen(process.env.PORT,'0.0.0.0', function(){
     console.log("HT's server is now starting, listening on 8080");
 });
 
