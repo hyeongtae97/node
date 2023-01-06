@@ -169,6 +169,7 @@ passport.use(new LocalStrategy({
     if(req.user){
       next()
     }else {
+      console.log(" '/myPage' request, client IP : " + requestIp.getClientIp(req));
       res.send("<script>alert('로그인 먼저 하셔야 하는대요?');document.location.href='/login';</script>");
     }
   }
