@@ -8,6 +8,7 @@ const requestIp = require('request-ip');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
+require('dotenv').config();
 
 
 app.use(session({secret : '비밀코드', resave : true, saveUninitialiezed : false}));
@@ -178,3 +179,4 @@ passport.use(new LocalStrategy({
     console.log(req.user);
     res.render('mypage.ejs', {userinfo : req.user});
   });
+
