@@ -47,56 +47,6 @@ app.get('/write', function(request, response){
     console.log(" '/write' request, client IP : " + requestIp.getClientIp(request));
 });
 
-app.post('/add', function(request, response){
-    response.send('전송완료');
-    console.log(" '/add' request, client IP : " + requestIp.getClientIp(request));
-    db.collection('counter').findOne({ name : '게시물갯수' }, function(err, result){
-        if (err){
-            console.log(err);
-            alert.apply("에러발생");
-        }
-        else{
-        var totalcount = result.totalPost;
-
-        db.collection('post').insertOne( { _id : totalcount + 1, 제목 : request.body.todo, 날짜 : request.body.day } , function(err, result){
-            if (err){
-                return console.log(err);
-            }
-            else{
-            console.log('저장완료')
-            db.collection('counter').updateOne( {name : '게시물갯수' } , { $inc : { totalPost : 1 } } , function(err, result){
-                if(err) {
-                    return console.log(err);
-                }
-                else {
-                return console.log('수정완료');
-                }
-              });
-            }
-          });
-        }
-
-    });
-  });
-
-app.get('/list', function(request, response){
-    db.collection('post').find().toArray(function(err,result){
-        response.render('list.ejs', {posts : result});
-        console.log(" '/list' request, client IP : " + requestIp.getClientIp(request));
-    });
-    
-});
-
-app.delete('/delete', function(req, res){
-    console.log(req.body._id);
-    console.log(" '/delete' request, client IP : " + requestIp.getClientIp(req));
-    req.body._id = parseInt(req.body._id);
-    console.log(req.body._id);
-    db.collection('post').deleteOne({_id : req.body._id}, function(err, result){
-    res.status(200).send({ message : '삭제 성공'});
-    });
-});
-
 app.get('/detail/:pageNumber', function(req, res){
     db.collection('post').findOne({_id : parseInt(req.params.pageNumber)}, function(err, result){
         console.log(" '/detailPage' request, client IP : " + requestIp.getClientIp(req));
@@ -174,9 +124,97 @@ passport.use(new LocalStrategy({
       res.send("<script>alert('로그인 먼저 하셔야 하는대요?');document.location.href='/login';</script>");
     }
   }
-  app.get('/mypage',authlogin, function(req, res){
+
+  app.get('/register', (req, res) => {
+    res.render('register.ejs')
+  })
+
+
+  app.post('/register', (req, res) => {
+    db.collection('login').insertOne({id:req.body.id, pw:req.body.pw}, function(err,result){
+      res.send("<script>alert('가입완료');document.location.href='/';</script>");
+      //res.redirect('/')
+    })
+  })
+
+
+  app.get('/mypage', authlogin, function(req, res){
     console.log(" '/myPage' request, client IP : " + requestIp.getClientIp(req));
     console.log(req.user);
     res.render('mypage.ejs', {userinfo : req.user});
   });
 
+  app.post('/add', authlogin, function(request, response){
+      response.send("<script>alert('전송완료');document.location.href='/write';</script>");
+      console.log(" '/add' request, client IP : " + requestIp.getClientIp(request));
+      db.collection('counter').findOne({ name : '게시물갯수' }, function(err, result){
+        var totalcount = result.totalPost;
+        var content ={ _id : totalcount + 1, 제목 : request.body.todo, 날짜 : request.body.day, 작성자 : request.user._id };
+          if (err){
+              console.log(err);
+              alert.apply("에러발생");
+          }
+          else{
+          db.collection('post').insertOne(content , function(err, result){
+              if (err){
+                  return console.log(err);
+              }
+              else{
+              console.log('저장완료')
+              db.collection('counter').updateOne( {name : '게시물갯수' } , { $inc : { totalPost : 1 } } , function(err, result){
+                  if(err) {
+                      return console.log(err);
+                  }
+                  else {
+                  return console.log('수정완료');
+
+                  }
+                });
+              }
+            });
+          }
+  
+      });
+    });
+
+  
+  app.get('/list', function(request, response){
+    db.collection('post').find().toArray(function(err,result){
+      //var whois = request.user._id;
+      //console.log(whois);
+      console.log(request.user)
+        response.render('list.ejs', {posts : result, username : request.user});
+        console.log(" '/list' request, client IP : " + requestIp.getClientIp(request));
+    });
+  });
+
+  app.delete('/delete', function(req, res){
+      console.log(req.body._id);
+      console.log(" '/delete' request, client IP : " + requestIp.getClientIp(req));
+      req.body._id = parseInt(req.body._id);
+      content = {_id : req.body._id, 작성자 : req.user._id};
+      console.log(req.body._id);
+      db.collection('post').deleteOne(content, function(err, result){
+      res.status(200).send({ message : '삭제 성공'});
+      });
+  });
+
+  app.get('/search', (req,res) => {
+    var searchitem = [
+      {
+        $search: {
+          index: 'titleSearch',
+          text: {
+            query: req.query.value,
+            path: '제목'  // 제목날짜 둘다 찾고 싶으면 ['제목', '날짜']
+          }
+        }
+      },
+      { $sort : {_id : 1}}
+  ]
+    console.log(req.query.value)
+    db.collection('post').aggregate(searchitem).toArray((err, result) => {
+      console.log(result)
+      res.render('search.ejs',{posts:result})
+    })
+  });

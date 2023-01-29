@@ -14,10 +14,12 @@
     <%- include('nav.html') %>
     <h4 class="text-center mt-4">상세페이지</h4>
     
-  <div class="container input-group mb-2">
-    <input class="form-control">
-    <button class="input-group-append btn btn-danger">검색</button>
-  </div>
+    <div class="container input-group mb-2">
+      <input class="form-control" id="search-input" placeholder="두 글자 이상 입력">
+      <button class="input-group-append btn btn-danger" id="search">검색</button>
+    </div>
+  
+
 
   <% for (var i = 0; i < posts.length; i++){ %>
   <div class="container mt-1">
@@ -29,13 +31,22 @@
         <p class="card-text"><%= posts[i].날짜 %></p>
         <a href="/edit/<%= posts[i]._id %>" class="card-link">수정하기</a>
       </div>
-      <button class="delete" data-id="<%= posts[i]._id %>">삭제하기</button>
+      <button class="delete" data-user="<%= posts[i].작성자 %>" data-id="<%= posts[i]._id %>">삭제하기</button>
     </div>
   </div>
   <% } %>
 
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
     
+    <script>
+      $('#search').click(function(){
+        var inputdata = $('#search-input').val()
+        window.location.replace('/search?value='+inputdata)
+      })
+    </script>
+
+
+
     <script type="text/javascript">
       $('.card-body').mouseover(function(e){
         var hover = $(this);
@@ -54,9 +65,16 @@
         var nowClick = $(this);
         console.log(pageNum + '번 게시물 클릭 됨');
         nowClick.parent('li').css('backgroundColor', '#aaa');
-
-
       });*/
+
+      for (var i = 0; i < posts.length; i++){
+        if(posts[i].작성자 == username._id){
+          $('.delete').css('display','block');
+        }
+        else{
+        $('.delete').css('display','none');
+        }
+      }
 
       $('.delete').click(function(e){
         var pageNum = e.target.dataset.id;
